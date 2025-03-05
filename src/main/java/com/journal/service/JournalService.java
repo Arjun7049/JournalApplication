@@ -14,6 +14,7 @@ import com.journal.repository.JournalRepository;
 import com.journal.repository.UserRepository;
 
 @Component
+@Transactional
 public class JournalService {
 	
 	@Autowired

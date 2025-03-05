@@ -6,13 +6,10 @@ import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,12 +19,43 @@ import com.journal.entity.User;
 import com.journal.service.UserService;
 
 @RestController
-@RequestMapping("/users")
-public class UserController {
-
+@RequestMapping("/admin")
+public class AdminController {
+	
 	@Autowired
 	private UserService userService;
+	
+	
+	@PostMapping("/create-admin")
+	public ResponseEntity<?> createAdmin(@RequestBody User user){
+		try {
+		User existingUser= userService.getUserByUsername(user.getUsername());
+		User updatedUser;
+		if(existingUser!=null) {
+			existingUser.getUserRoles().add("ADMIN");
+			updatedUser=	userService.saveEntry(existingUser);
+			return new ResponseEntity<>(updatedUser,HttpStatus.CREATED);
+		}
+		user.getUserRoles().add("ADMIN");
+		updatedUser=userService.saveUserEntry(user);
+		return new ResponseEntity<>(updatedUser,HttpStatus.CREATED);
+		}catch(Exception e) {
+			return new ResponseEntity<>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		
+	}
 
+	@GetMapping
+	public ResponseEntity<?> getAllEntries() {
+		System.out.println("Get all user method called");
+		try {
+			return new ResponseEntity<List<User>>(userService.getAllEntries(), HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+		}
+
+	}
+	
 	@GetMapping("/{id}")
 	public ResponseEntity<?> getEntry(@PathVariable ObjectId id) {
 
@@ -43,24 +71,6 @@ public class UserController {
 		}
 
 	}
-
-	@PutMapping
-	public ResponseEntity<?> updateUser(@RequestBody User user) {
-
-		try {
-			String username = UserUtill.getLoggedInUser();
-			User oldEntry = userService.getUserByUsername(username);
-
-			oldEntry.setUsername(user.getUsername() != null && user.getUsername().strip() != "" ? user.getUsername()
-					: oldEntry.getUsername());
-			oldEntry.setPassword(user.getPassword() != null && user.getPassword().strip() != "" ? user.getPassword()
-					: oldEntry.getPassword());
-			return new ResponseEntity<>(userService.saveUserEntry(oldEntry), HttpStatus.OK);
-
-		} catch (Exception e) {
-			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-	}
 	
 	@DeleteMapping
 	public ResponseEntity<String> deleteUserByUsername() {
@@ -75,5 +85,4 @@ public class UserController {
 		}
 
 	}
-
 }
