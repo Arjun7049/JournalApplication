@@ -18,28 +18,38 @@ import com.journal.UserUtill;
 import com.journal.entity.User;
 import com.journal.service.UserService;
 
+import lombok.extern.slf4j.Slf4j;
+
 @RestController
 @RequestMapping("/admin")
+@Slf4j
 public class AdminController {
 	
 	@Autowired
 	private UserService userService;
 	
 	
+	
+	
 	@PostMapping("/create-admin")
 	public ResponseEntity<?> createAdmin(@RequestBody User user){
+		log.info("create admin request recieved {}",user.getUsername());
 		try {
 		User existingUser= userService.getUserByUsername(user.getUsername());
 		User updatedUser;
 		if(existingUser!=null) {
-			existingUser.getUserRoles().add("ADMIN");
-			updatedUser=	userService.saveEntry(existingUser);
-			return new ResponseEntity<>(updatedUser,HttpStatus.CREATED);
+			if(!existingUser.getUserRoles().contains("ADMIN")) {
+				existingUser.getUserRoles().add("ADMIN");
+				updatedUser=	userService.saveEntry(existingUser);
+				return new ResponseEntity<>(updatedUser,HttpStatus.CREATED);
+			}
+			throw new Exception("User is already an ADMIN");
 		}
 		user.getUserRoles().add("ADMIN");
 		updatedUser=userService.saveUserEntry(user);
 		return new ResponseEntity<>(updatedUser,HttpStatus.CREATED);
 		}catch(Exception e) {
+			log.error(e.getMessage(),user,e);
 			return new ResponseEntity<>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		
@@ -47,10 +57,12 @@ public class AdminController {
 
 	@GetMapping
 	public ResponseEntity<?> getAllEntries() {
-		System.out.println("Get all user method called");
+		String username = UserUtill.getLoggedInUser();
+		log.info("get all users request recieved from {}",username);
 		try {
 			return new ResponseEntity<List<User>>(userService.getAllEntries(), HttpStatus.OK);
 		} catch (Exception e) {
+			log.error("error ocurred while getting user entry ",e);
 			return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
 		}
 
@@ -58,7 +70,7 @@ public class AdminController {
 	
 	@GetMapping("/{id}")
 	public ResponseEntity<?> getEntry(@PathVariable ObjectId id) {
-
+		log.info("get user request recieved for {}", id);
 		try {
 			User entry = userService.getEntry(id);
 			if (entry != null)
@@ -67,6 +79,7 @@ public class AdminController {
 			return new ResponseEntity<>("No user entry found!!", HttpStatus.BAD_REQUEST);
 
 		} catch (Exception e) {
+			log.error("error ocurred while getting user entry {}",id,e);
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
@@ -75,12 +88,14 @@ public class AdminController {
 	@DeleteMapping
 	public ResponseEntity<String> deleteUserByUsername() {
 		String username = UserUtill.getLoggedInUser();
+		log.info("delete user request recieved for {}", username);
 		try {
 			String reposne= userService.deleteByUsername(username);
 			return new ResponseEntity<>(reposne, HttpStatus.OK);
 
 
 		} catch (Exception e) {
+			log.error("error ocurred while deleting {}",username,e);
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 

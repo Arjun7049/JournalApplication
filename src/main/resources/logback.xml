@@ -1,0 +1,32 @@
+
+<configuration>
+	<appender name="JournalAppConsoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>
+				%d{dd-mm-yyyy HH:mm:SSS} [%thread] %-5level %logger{36} - %msg%n
+			</pattern>		
+		</encoder>
+	</appender>
+	
+	<appender name="JournalAppFileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>
+			C:\Users\ARJUN\Desktop\Journal_Project\Logs\jounalapp.log
+		</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+			<fileNamePattern>C:/Users/ARJUN/Desktop/Journal_Project/Logs/journalapp-%d{yy-MM-dd}.%i.log</fileNamePattern>
+			<maxFileSize>2MB</maxFileSize>
+			<maxHistory>5</maxHistory>
+		</rollingPolicy>
+		<encoder>
+			<pattern>
+				%d{dd-mm-yyyy HH:mm:SSS} [%thread] %-5level %logger{36} - %msg%n
+			</pattern>		
+		</encoder>
+		
+	</appender>
+	
+	<root level="INFO">
+		<appender-ref ref="JournalAppConsoleAppender"/>
+		<appender-ref ref="JournalAppFileAppender"/>
+	</root>
+</configuration>
