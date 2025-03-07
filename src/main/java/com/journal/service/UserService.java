@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.journal.entity.User;
 import com.journal.repository.UserRepository;
 
-@Component
+@Service
 @Transactional
 public class UserService {
 	

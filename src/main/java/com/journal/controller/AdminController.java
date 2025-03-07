@@ -14,9 +14,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.journal.UserUtill;
 import com.journal.entity.User;
 import com.journal.service.UserService;
+import com.journal.util.UserUtill;
 
 import lombok.extern.slf4j.Slf4j;
 
