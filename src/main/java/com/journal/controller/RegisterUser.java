@@ -2,6 +2,7 @@ package com.journal.controller;
 
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,7 @@ import com.journal.service.MailSenderImpl;
 import com.journal.service.UserService;
 
 @RestController
+@Slf4j
 @RequestMapping("/public")
 public class RegisterUser {
 	
@@ -36,13 +38,14 @@ public class RegisterUser {
 	
 	@PostMapping("/register")
 	public ResponseEntity<User> saveEntity(@RequestBody User user) {
-		System.out.println("Post user method called");
+		log.info("Post user method called: {}",user);
 		try {
 			User respose = userService.saveUserEntry(user);
 			Mail mail = new Mail(user.getEmail(),subject,content);
-			mailSenderImpl.sendMail(mail);
+//			mailSenderImpl.sendMail(mail); It will send mail on the user email
 			return new ResponseEntity<>(respose,HttpStatus.CREATED);
 		}catch(Exception e) {
+			log.error("Error registering user: {} {}",user,e.getMessage());
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 				
