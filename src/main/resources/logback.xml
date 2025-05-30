@@ -17,9 +17,12 @@
 			<maxFileSize>2MB</maxFileSize>
 			<maxHistory>5</maxHistory>
 		</rollingPolicy>
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>ERROR</level>
+		</filter>
 		<encoder>
 			<pattern>
-				%d{dd-mm-yyyy HH:mm:SSS} [%thread] %-5level %logger{36} - %msg%n
+				%d{dd-MM-yyyy HH:mm:SSS} [%thread] %-5level %logger{36} - %msg%n
 			</pattern>		
 		</encoder>
 		

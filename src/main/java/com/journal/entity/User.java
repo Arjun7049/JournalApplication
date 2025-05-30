@@ -1,7 +1,9 @@
 package com.journal.entity;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
@@ -33,6 +35,6 @@ public class User {
 	@DBRef
 	private List<JournalEntry> journalEntries = new ArrayList<>();
 	
-	private List<String>userRoles=new ArrayList<>();
+	private Set<String> userRoles=new HashSet<>();
 
 }

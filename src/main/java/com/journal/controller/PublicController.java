@@ -28,7 +28,6 @@ import com.journal.service.MailSenderImpl;
 @RequestMapping("/public")
 public class PublicController {
 
-	
 	@Autowired
 	private UserRepositoryImpl userRepositoryImpl;
 	
@@ -57,12 +56,6 @@ public class PublicController {
 		}catch(Exception e) {
 			return new ResponseEntity<String>("Something wrong!!", HttpStatus.OK);
 		}
-		
-	}
-
-	@PostMapping("/signup")
-	public void signup(@RequestBody User user){
-
 	}
 	@PostMapping("/login")
 	public ResponseEntity<?> login(@RequestBody User user){
@@ -72,6 +65,7 @@ public class PublicController {
 			String token = jwtUtil.generateToken(userDetails.getUsername());
 			
 			JwtResponse jwtResponse = new JwtResponse();
+			jwtResponse.setUsername(userDetails.getUsername());
 			jwtResponse.setToken(token);
 			return new ResponseEntity<>(jwtResponse,HttpStatus.OK);
 		}catch (Exception e){

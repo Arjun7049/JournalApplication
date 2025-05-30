@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.journal.exception.UserException;
+import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,104 +28,44 @@ import com.journal.service.UserService;
 import com.journal.util.UserUtill;
 
 @RestController
+@Slf4j
 @RequestMapping("/journal")
 public class JournalController {
 
 	@Autowired
 	private JournalService journalService;
 
-	@Autowired
-	private UserService userService;
-
 	@PostMapping
 	public ResponseEntity<JournalEntry> saveEntry(@RequestBody JournalEntry journalEntry) {
-
-		try {
-			String username = UserUtill.getLoggedInUser();
-			return new ResponseEntity<>(journalService.saveEntry(username, journalEntry), HttpStatus.CREATED);
-		} catch (Exception e) {
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-
+		log.info("Saving journal entry: {}", journalEntry);
+		String username = UserUtill.getLoggedInUser();
+		return new ResponseEntity<>(journalService.saveEntry(username, journalEntry), HttpStatus.CREATED);
 	}
-
 	@GetMapping
-	public ResponseEntity<?> getAllEntriesOfUser() {
-		try {
-			String username = UserUtill.getLoggedInUser();
-			return new ResponseEntity<List<JournalEntry>>(journalService.getAllEntriesOfUser(username), HttpStatus.OK);
-		} catch (Exception e) {
-			return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-		}
-
+	public ResponseEntity<?> getAllEntriesOfUser() throws UserException {
+		String username = UserUtill.getLoggedInUser();
+		log.info("Fetching all journal entries for user{}",username);
+		return new ResponseEntity<List<JournalEntry>>(journalService.getAllEntriesOfUser(username), HttpStatus.OK);
 	}
-
 	@GetMapping("/id/{id}")
 	public ResponseEntity<?> getEntry(@PathVariable ObjectId id) {
-
-		try {
-			String username = UserUtill.getLoggedInUser();
-			User user = userService.getUserByUsername(username);
-			List<JournalEntry> collectedId = user.getJournalEntries().stream().filter(x -> x.getId().equals(id))
-					.collect(Collectors.toList());
-			if (collectedId != null && !collectedId.isEmpty()) {
-				return new ResponseEntity<>(collectedId, HttpStatus.OK);
-			}
-
-			return new ResponseEntity<>("No entry found!!", HttpStatus.NOT_FOUND);
-
-		} catch (Exception e) {
-			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-
+		String username = UserUtill.getLoggedInUser();
+		log.info("Fetching journal entry with id: {} for user: {}", id, username);
+		return new ResponseEntity<>(journalService.getUserEntry(username,id), HttpStatus.OK);
 	}
 
 	@PutMapping("/id/{id}")
-	public ResponseEntity<?> updateEntity(@PathVariable ObjectId id,
-			@RequestBody JournalEntry journalEntry) {
-		try {
-			String username= UserUtill.getLoggedInUser();
-			User user = userService.getUserByUsername(username);
-			List<JournalEntry> collectedEntries = user.getJournalEntries().stream().filter(x -> x.getId().equals(id))
-					.collect(Collectors.toList());
-
-			if (collectedEntries != null && !collectedEntries.isEmpty()) {
-				JournalEntry oldEntry=collectedEntries.get(0);
-				
-				oldEntry.setContent(journalEntry.getContent() != null && journalEntry.getContent().strip() != ""
-						? journalEntry.getContent()
-						: oldEntry.getContent());
-				oldEntry.setTitle(journalEntry.getTitle() != null && journalEntry.getTitle().strip() != ""
-						? journalEntry.getTitle()
-						: oldEntry.getTitle());
-				return new ResponseEntity<>(journalService.saveEntry(oldEntry), HttpStatus.OK);
-			}
-			return new ResponseEntity<>("No entry found with id: "+id, HttpStatus.NOT_FOUND);
-		} catch (Exception e) {
-			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+	public ResponseEntity<?> updateEntity(@PathVariable ObjectId id, @RequestBody JournalEntry journalEntry) {
+		log.info("Updating entry with id: {}", id);
+		String username = UserUtill.getLoggedInUser();
+		return new ResponseEntity<>(journalService.updateJournalEntry(username,id, journalEntry), HttpStatus.OK);
 	}
 
 	@DeleteMapping("/id/{id}")
 	public ResponseEntity<String> deleteEntry( @PathVariable ObjectId id) {
-
-		try {
-			String username= UserUtill.getLoggedInUser();
-			User user = userService.getUserByUsername(username);
-			List<JournalEntry> collectedEntries = user.getJournalEntries().stream().filter(x -> x.getId().equals(id))
-					.collect(Collectors.toList());
-
-			if (collectedEntries != null && !collectedEntries.isEmpty()) {
-				JournalEntry oldEntry=collectedEntries.get(0);
-				return new ResponseEntity<>(journalService.deleteEntry(username, oldEntry.getId()), HttpStatus.OK);
-			}
-				
-			return new ResponseEntity<>("No entry found!!", HttpStatus.NOT_FOUND);
-
-		} catch (Exception e) {
-			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-
+		log.info("Deleting entry with id: {}", id);
+		String username= UserUtill.getLoggedInUser();
+		return new ResponseEntity<>(journalService.deleteEntry(username, id), HttpStatus.OK);
 	}
 
 }

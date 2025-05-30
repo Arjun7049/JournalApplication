@@ -1,10 +1,9 @@
 package com.journal.scheduler;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
-
+import java.time.temporal.ChronoUnit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -42,7 +41,7 @@ public class UserScheduler {
 	 
 	 for(User user : users) {
 		List<String>content=  user.getJournalEntries().stream()
-				.filter(x->x.getTimestamp().isAfter(LocalDateTime.now().minus(7,ChronoUnit.DAYS)))
+				.filter(x->x.getTimestamp().isAfter(LocalDateTime.now().minus(7, ChronoUnit.DAYS)))
 				.map(x->x.getContent()).collect(Collectors.toList());
 		String entry= String.join(" ", content);
 		String sentiment= sentimentAnaysis.getSentiment(entry);
